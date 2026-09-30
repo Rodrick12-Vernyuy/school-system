@@ -1,0 +1,153 @@
+# EduERP Render Blueprint
+# Deploy: Render Dashboard → New → Blueprint → Connect GitHub repo
+services:
+  # ===== DATABASES =====
+  - type: pserv
+    name: eduerp-academic-db
+    plan: starter
+    region: oregon
+    databaseName: academic_db
+    user: erp
+
+  - type: pserv
+    name: eduerp-finance-db
+    plan: starter
+    region: oregon
+    databaseName: finance_db
+    user: erp
+
+  - type: pserv
+    name: eduerp-hr-db
+    plan: starter
+    region: oregon
+    databaseName: hr_db
+    user: erp
+
+  # ===== BACKEND SERVICES =====
+  - type: web
+    name: eduerp-academic-service
+    plan: starter
+    region: oregon
+    rootDir: services/academic-service
+    buildCommand: npm install && npm run migrate
+    startCommand: npm start
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        fromDatabase:
+          name: eduerp-academic-db
+          property: connectionString
+      - key: RABBITMQ_URL
+        sync: false
+        # Set manually in Render dashboard: from CloudAMQP or your RabbitMQ provider
+      - key: JWT_ACCESS_SECRET
+        sync: false
+        # Generate: openssl rand -hex 32
+      - key: JWT_REFRESH_SECRET
+        sync: false
+        # Generate: openssl rand -hex 32
+      - key: JWT_ACCESS_EXPIRES_IN
+        value: 15m
+      - key: JWT_REFRESH_EXPIRES_IN
+        value: 7d
+      - key: MAX_FAILED_LOGIN_ATTEMPTS
+        value: "5"
+      - key: LOCKOUT_DURATION_MINUTES
+        value: "15"
+      - key: FRONTEND_ORIGIN
+        sync: false
+        # Set to your frontend URL after deploy: https://eduerp-frontend.onrender.com
+
+  - type: web
+    name: eduerp-finance-service
+    plan: starter
+    region: oregon
+    rootDir: services/finance-service
+    buildCommand: npm install && npm run migrate
+    startCommand: npm start
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        fromDatabase:
+          name: eduerp-finance-db
+          property: connectionString
+      - key: RABBITMQ_URL
+        sync: false
+      - key: JWT_ACCESS_SECRET
+        sync: false
+      - key: PER_CREDIT_TUITION_FCFA
+        value: "15000"
+      - key: FRONTEND_ORIGIN
+        sync: false
+
+  - type: web
+    name: eduerp-hr-service
+    plan: starter
+    region: oregon
+    rootDir: services/hr-service
+    buildCommand: npm install && npm run migrate
+    startCommand: npm start
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        fromDatabase:
+          name: eduerp-hr-db
+          property: connectionString
+      - key: JWT_ACCESS_SECRET
+        sync: false
+      - key: FRONTEND_ORIGIN
+        sync: false
+
+  # ===== API GATEWAY =====
+  - type: web
+    name: eduerp-api-gateway
+    plan: starter
+    region: oregon
+    rootDir: api-gateway
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: GATEWAY_PORT
+        value: "4000"
+      - key: JWT_ACCESS_SECRET
+        sync: false
+      - key: ACADEMIC_SERVICE_URL
+        sync: false
+        # Set after academic service deploys: https://eduerp-academic-service.onrender.com
+      - key: FINANCE_SERVICE_URL
+        sync: false
+        # Set after finance service deploys: https://eduerp-finance-service.onrender.com
+      - key: HR_SERVICE_URL
+        sync: false
+        # Set after hr service deploys: https://eduerp-hr-service.onrender.com
+      - key: FRONTEND_ORIGIN
+        sync: false
+
+  # ===== FRONTEND =====
+  - type: static
+    name: eduerp-frontend
+    plan: starter
+    region: oregon
+    rootDir: frontend
+    buildCommand: npm install && npm run build
+    staticPublishPath: dist
+    envVars:
+      - key: VITE_API_BASE_URL
+        sync: false
+        # Set after gateway deploys: https://eduerp-api-gateway.onrender.com/api/v1
+    headers:
+      - path: /*
+        name: Cache-Control
+        value: no-cache, no-store, must-revalidate
+      - path: /assets/*
+        name: Cache-Control
+        value: public, max-age=31536000, immutable
