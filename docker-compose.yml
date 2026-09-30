@@ -1,0 +1,145 @@
+# EduERP full-system orchestration. Start everything with:
+#   docker compose up --build
+# Then open the frontend at http://localhost:5173
+# and the gateway's routing docs at http://localhost:4000/docs
+services:
+  # ---------- Infrastructure ----------
+  rabbitmq:
+    image: rabbitmq:3.13-management-alpine
+    ports:
+      - "5672:5672"   # AMQP
+      - "15672:15672" # management UI (guest-friendly for local dev)
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER:-erp}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD:-erp_dev_password}
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  academic-db:
+    image: postgres:16-alpine
+    # Port exposed to the host so a service can also be run locally with
+    # `npm run dev` (outside Docker) against this same container - see
+    # README section 6, "Running locally (without Docker)".
+    ports: ["5433:5432"]
+    environment:
+      POSTGRES_DB: academic_db
+      POSTGRES_USER: ${POSTGRES_USER:-erp}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-erp_dev_password}
+    volumes:
+      - academic_db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-erp}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  finance-db:
+    image: postgres:16-alpine
+    ports: ["5434:5432"]
+    environment:
+      POSTGRES_DB: finance_db
+      POSTGRES_USER: ${POSTGRES_USER:-erp}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-erp_dev_password}
+    volumes:
+      - finance_db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-erp}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  hr-db:
+    image: postgres:16-alpine
+    ports: ["5435:5432"]
+    environment:
+      POSTGRES_DB: hr_db
+      POSTGRES_USER: ${POSTGRES_USER:-erp}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-erp_dev_password}
+    volumes:
+      - hr_db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-erp}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # ---------- Backend microservices ----------
+  academic-service:
+    build: ./services/academic-service
+    ports: ["4001:4001"]
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-erp}:${POSTGRES_PASSWORD:-erp_dev_password}@academic-db:5432/academic_db
+      RABBITMQ_URL: amqp://${RABBITMQ_USER:-erp}:${RABBITMQ_PASSWORD:-erp_dev_password}@rabbitmq:5672
+      ACADEMIC_PORT: 4001
+      JWT_ACCESS_SECRET: ${JWT_ACCESS_SECRET:-replace-with-a-long-random-access-secret}
+      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:-replace-with-a-long-random-refresh-secret}
+      JWT_ACCESS_EXPIRES_IN: ${JWT_ACCESS_EXPIRES_IN:-15m}
+      JWT_REFRESH_EXPIRES_IN: ${JWT_REFRESH_EXPIRES_IN:-7d}
+      MAX_FAILED_LOGIN_ATTEMPTS: ${MAX_FAILED_LOGIN_ATTEMPTS:-5}
+      LOCKOUT_DURATION_MINUTES: ${LOCKOUT_DURATION_MINUTES:-15}
+      FRONTEND_ORIGIN: ${FRONTEND_ORIGIN:-http://localhost:5173}
+    depends_on:
+      academic-db: { condition: service_healthy }
+      rabbitmq: { condition: service_healthy }
+    # Runs the migration, seeds default dev accounts (idempotent - safe on
+    # every restart), then starts the server. Keeps setup visible and
+    # simple (no separate migration/seed container needed).
+    command: sh -c "node src/db/migrate.js && node src/db/seed.js && node src/server.js"
+
+  finance-service:
+    build: ./services/finance-service
+    ports: ["4002:4002"]
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-erp}:${POSTGRES_PASSWORD:-erp_dev_password}@finance-db:5432/finance_db
+      RABBITMQ_URL: amqp://${RABBITMQ_USER:-erp}:${RABBITMQ_PASSWORD:-erp_dev_password}@rabbitmq:5672
+      FINANCE_PORT: 4002
+      JWT_ACCESS_SECRET: ${JWT_ACCESS_SECRET:-replace-with-a-long-random-access-secret}
+      PER_CREDIT_TUITION_FCFA: ${PER_CREDIT_TUITION_FCFA:-15000}
+      FRONTEND_ORIGIN: ${FRONTEND_ORIGIN:-http://localhost:5173}
+    depends_on:
+      finance-db: { condition: service_healthy }
+      rabbitmq: { condition: service_healthy }
+    command: sh -c "node src/db/migrate.js && node src/server.js"
+
+  hr-service:
+    build: ./services/hr-service
+    ports: ["4003:4003"]
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-erp}:${POSTGRES_PASSWORD:-erp_dev_password}@hr-db:5432/hr_db
+      HR_PORT: 4003
+      JWT_ACCESS_SECRET: ${JWT_ACCESS_SECRET:-replace-with-a-long-random-access-secret}
+      FRONTEND_ORIGIN: ${FRONTEND_ORIGIN:-http://localhost:5173}
+    depends_on:
+      hr-db: { condition: service_healthy }
+    command: sh -c "node src/db/migrate.js && node src/server.js"
+
+  # ---------- API Gateway ----------
+  api-gateway:
+    build: ./api-gateway
+    ports: ["4000:4000"]
+    environment:
+      GATEWAY_PORT: 4000
+      ACADEMIC_SERVICE_URL: http://academic-service:4001
+      FINANCE_SERVICE_URL: http://finance-service:4002
+      HR_SERVICE_URL: http://hr-service:4003
+      JWT_ACCESS_SECRET: ${JWT_ACCESS_SECRET:-replace-with-a-long-random-access-secret}
+      FRONTEND_ORIGIN: ${FRONTEND_ORIGIN:-http://localhost:5173}
+    depends_on:
+      - academic-service
+      - finance-service
+      - hr-service
+
+  # ---------- Frontend ----------
+  frontend:
+    build: ./frontend
+    ports: ["5173:80"]
+    depends_on:
+      - api-gateway
+
+volumes:
+  academic_db_data:
+  finance_db_data:
+  hr_db_data:

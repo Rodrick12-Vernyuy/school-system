@@ -1,0 +1,471 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+/* ============================================================
+   Light theme (default)
+   ============================================================ */
+:root {
+  --eduerp-bg: #F6F6FA;
+  --eduerp-surface: #FFFFFF;
+  --eduerp-surface-alt: #F1F1F6;
+  --eduerp-border: rgba(20, 20, 35, 0.08);
+  --eduerp-border-strong: rgba(20, 20, 35, 0.14);
+  --eduerp-ink: #16161D;
+  --eduerp-muted: #6B6B7C;
+  --eduerp-card-radius: 12px;
+  --eduerp-shadow: 0 1px 2px rgba(20, 20, 35, 0.04), 0 8px 20px rgba(20, 20, 35, 0.05);
+  --eduerp-shadow-hover: 0 2px 4px rgba(20, 20, 35, 0.05), 0 12px 26px rgba(20, 20, 35, 0.08);
+
+  --eduerp-purple: #5750EE;
+  --eduerp-purple-dark: #453FD1;
+  --eduerp-purple-light: rgba(87, 80, 238, 0.10);
+
+  --stat-blue-bg: #EAF1FF;   --stat-blue-fg: #2F63F5;
+  --stat-green-bg: #E5FAF1;  --stat-green-fg: #0EAE72;
+  --stat-pink-bg: #FDEAF3;   --stat-pink-fg: #DB4A93;
+  --stat-orange-bg: #FFF3E3; --stat-orange-fg: #E68A2E;
+
+  --pill-danger-bg: #FDE8EB;  --pill-danger-fg: #E0334C;
+  --pill-success-bg: #E4FAF0; --pill-success-fg: #0CA36B;
+  --pill-info-bg: #E9EDFF;    --pill-info-fg: #3D5AFE;
+  --pill-warning-bg: #FFF3DE; --pill-warning-fg: #D68306;
+  --pill-neutral-bg: #EFEFF3; --pill-neutral-fg: #6B6B7C;
+}
+
+/* ============================================================
+   Dark theme - toggled via data-bs-theme="dark" on <html>
+   (matches Bootstrap 5.3's own dark-mode attribute, so built-in
+   components like forms/alerts switch in lockstep automatically)
+   ============================================================ */
+:root[data-bs-theme='dark'] {
+  --eduerp-bg: #0A0A0F;
+  --eduerp-surface: #16161F;
+  --eduerp-surface-alt: #1D1D28;
+  --eduerp-border: rgba(255, 255, 255, 0.08);
+  --eduerp-border-strong: rgba(255, 255, 255, 0.14);
+  --eduerp-ink: #F2F2F7;
+  --eduerp-muted: #93939F;
+  --eduerp-shadow: 0 1px 0 rgba(255, 255, 255, 0.03) inset, 0 8px 20px rgba(0, 0, 0, 0.35);
+  --eduerp-shadow-hover: 0 1px 0 rgba(255, 255, 255, 0.04) inset, 0 12px 28px rgba(0, 0, 0, 0.45);
+
+  --eduerp-purple: #6E6CF7;
+  --eduerp-purple-dark: #5A57E0;
+  --eduerp-purple-light: rgba(110, 108, 247, 0.16);
+
+  --stat-blue-bg: rgba(76, 130, 255, 0.14);   --stat-blue-fg: #7DA2FF;
+  --stat-green-bg: rgba(34, 197, 148, 0.14);  --stat-green-fg: #3FE3B4;
+  --stat-pink-bg: rgba(240, 85, 157, 0.14);   --stat-pink-fg: #FF8CC0;
+  --stat-orange-bg: rgba(255, 159, 64, 0.14); --stat-orange-fg: #FFB86B;
+
+  --pill-danger-bg: rgba(255, 90, 90, 0.14);   --pill-danger-fg: #FF7A7A;
+  --pill-success-bg: rgba(34, 197, 148, 0.14); --pill-success-fg: #3FE3B4;
+  --pill-info-bg: rgba(76, 111, 255, 0.16);    --pill-info-fg: #8CA6FF;
+  --pill-warning-bg: rgba(255, 176, 32, 0.15); --pill-warning-fg: #FFC24B;
+  --pill-neutral-bg: rgba(255, 255, 255, 0.08); --pill-neutral-fg: #ABABBB;
+}
+
+* { font-family: 'Inter', system-ui, -apple-system, sans-serif; }
+
+html { color-scheme: light dark; }
+
+body {
+  background-color: var(--eduerp-bg);
+  color: var(--eduerp-ink);
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--eduerp-border-strong); border-radius: 8px; }
+
+h1, h2, h3, h4, h5, h6 { letter-spacing: -0.01em; }
+
+/* ============================================================
+   App shell: two-tier top navbar, no sidebar, at every screen size.
+   ============================================================ */
+.eduerp-app {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.eduerp-navbar {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  background: var(--eduerp-surface);
+  border-bottom: 1px solid var(--eduerp-border);
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.eduerp-navbar-top {
+  padding: 12px 24px;
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+
+.eduerp-navbar-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 700;
+  font-size: 0.95rem;
+  flex-shrink: 0;
+}
+
+.eduerp-brand-mark {
+  width: 32px;
+  height: 32px;
+  border-radius: 9px;
+  background: var(--eduerp-purple);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 0.95rem;
+  flex-shrink: 0;
+}
+
+.eduerp-navbar-tabs {
+  padding: 0 24px;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  overflow-x: auto;
+  border-top: 1px solid var(--eduerp-border);
+  scrollbar-width: none;
+}
+.eduerp-navbar-tabs::-webkit-scrollbar { display: none; }
+
+.eduerp-navbar-tabs a,
+.eduerp-logout-link {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 11px 13px;
+  color: var(--eduerp-muted);
+  text-decoration: none;
+  font-size: 0.85rem;
+  font-weight: 500;
+  white-space: nowrap;
+  flex-shrink: 0;
+  border-bottom: 2px solid transparent;
+  transition: color 0.15s ease, border-color 0.15s ease;
+}
+.eduerp-navbar-tabs a svg,
+.eduerp-logout-link svg { flex-shrink: 0; font-size: 1rem; }
+
+.eduerp-navbar-tabs a:hover,
+.eduerp-logout-link:hover { color: var(--eduerp-ink); }
+
+.eduerp-navbar-tabs a.active {
+  color: var(--eduerp-purple);
+  border-bottom-color: var(--eduerp-purple);
+  font-weight: 600;
+}
+
+.eduerp-logout-link { margin-left: auto; }
+
+/* ---------- Search box ---------- */
+.eduerp-search {
+  flex-grow: 1;
+  max-width: 340px;
+  background: var(--eduerp-surface-alt);
+  border: 1px solid var(--eduerp-border);
+  border-radius: 9px;
+  padding: 7px 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--eduerp-muted);
+}
+.eduerp-search input {
+  border: none;
+  background: transparent;
+  outline: none;
+  width: 100%;
+  font-size: 0.86rem;
+  color: var(--eduerp-ink);
+}
+
+.eduerp-icon-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 9px;
+  background: var(--eduerp-surface-alt);
+  border: 1px solid var(--eduerp-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--eduerp-muted);
+  font-size: 1rem;
+  transition: color 0.15s ease, border-color 0.15s ease;
+}
+.eduerp-icon-btn:hover { color: var(--eduerp-purple); border-color: var(--eduerp-border-strong); }
+
+.eduerp-avatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: var(--eduerp-purple-light);
+  color: var(--eduerp-purple);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 0.8rem;
+}
+
+/* ---------- Content area ---------- */
+.eduerp-content-wrap {
+  flex-grow: 1;
+  padding: 24px;
+  width: 100%;
+  max-width: 1360px;
+  margin: 0 auto;
+}
+
+/* ---------- Page header (plain, restrained - not a decorative banner) ---------- */
+.eduerp-page-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 22px;
+}
+.eduerp-page-eyebrow {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--eduerp-purple);
+  margin-bottom: 4px;
+}
+.eduerp-page-title { font-size: 1.4rem; font-weight: 700; margin: 0; }
+.eduerp-page-subtitle { color: var(--eduerp-muted); font-size: 0.88rem; margin: 4px 0 0; }
+
+/* ---------- Cards ---------- */
+.stat-card {
+  border: 1px solid var(--eduerp-border);
+  background: var(--eduerp-surface);
+  border-radius: var(--eduerp-card-radius);
+  box-shadow: var(--eduerp-shadow);
+  transition: box-shadow 0.2s ease, background-color 0.2s ease, border-color 0.2s ease;
+}
+.stat-card:hover { box-shadow: var(--eduerp-shadow-hover); }
+
+.stat-card .stat-icon {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+  margin-bottom: 12px;
+}
+
+.stat-card .stat-value {
+  font-size: 1.45rem;
+  font-weight: 700;
+  color: var(--eduerp-ink);
+  letter-spacing: -0.01em;
+}
+
+.stat-card .stat-label {
+  color: var(--eduerp-muted);
+  font-size: 0.79rem;
+  font-weight: 500;
+}
+
+.stat-variant-blue .stat-icon   { background: var(--stat-blue-bg);   color: var(--stat-blue-fg); }
+.stat-variant-green .stat-icon  { background: var(--stat-green-bg);  color: var(--stat-green-fg); }
+.stat-variant-pink .stat-icon   { background: var(--stat-pink-bg);   color: var(--stat-pink-fg); }
+.stat-variant-orange .stat-icon { background: var(--stat-orange-bg); color: var(--stat-orange-fg); }
+
+.table-card {
+  background: var(--eduerp-surface);
+  border: 1px solid var(--eduerp-border);
+  border-radius: var(--eduerp-card-radius);
+  box-shadow: var(--eduerp-shadow);
+  padding: 20px;
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.table-card h6 { font-weight: 700; font-size: 0.86rem; }
+
+/* ---------- Status pills ---------- */
+.pill {
+  display: inline-block;
+  padding: 4px 11px;
+  border-radius: 20px;
+  font-size: 0.73rem;
+  font-weight: 600;
+  text-transform: capitalize;
+  white-space: nowrap;
+}
+.pill-danger  { background: var(--pill-danger-bg);  color: var(--pill-danger-fg); }
+.pill-success { background: var(--pill-success-bg); color: var(--pill-success-fg); }
+.pill-info    { background: var(--pill-info-bg);    color: var(--pill-info-fg); }
+.pill-warning { background: var(--pill-warning-bg); color: var(--pill-warning-fg); }
+.pill-neutral { background: var(--pill-neutral-bg); color: var(--pill-neutral-fg); }
+
+.badge-status { text-transform: capitalize; }
+
+/* ---------- Avatars in tables ---------- */
+.row-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--eduerp-surface-alt);
+  border: 1px solid var(--eduerp-border);
+  color: var(--eduerp-purple);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 0.72rem;
+  margin-right: 10px;
+}
+
+/* ---------- Buttons ---------- */
+.btn { font-weight: 500; border-radius: 9px; }
+.btn-sm { border-radius: 7px; }
+.btn-primary,
+.btn-primary:hover,
+.btn-primary:focus {
+  background-color: var(--eduerp-purple);
+  border-color: var(--eduerp-purple);
+  color: #fff;
+}
+.btn-primary:hover { background-color: var(--eduerp-purple-dark); border-color: var(--eduerp-purple-dark); }
+.btn-outline-primary { color: var(--eduerp-purple); border-color: var(--eduerp-purple); }
+.btn-outline-primary:hover { background-color: var(--eduerp-purple); border-color: var(--eduerp-purple); color: #fff; }
+.btn-outline-secondary { color: var(--eduerp-muted); border-color: var(--eduerp-border-strong); }
+.btn-outline-secondary:hover { background-color: var(--eduerp-surface-alt); color: var(--eduerp-ink); border-color: var(--eduerp-border-strong); }
+.btn-outline-danger:hover, .btn-outline-success:hover { color: #fff; }
+
+.nav-tabs { border-bottom-color: var(--eduerp-border); }
+.nav-tabs .nav-link.active { background: transparent; color: var(--eduerp-purple); border-color: transparent transparent var(--eduerp-purple); font-weight: 600; }
+.nav-tabs .nav-link { color: var(--eduerp-muted); border-color: transparent; }
+.nav-tabs .nav-link:hover { border-color: transparent; color: var(--eduerp-ink); }
+
+a { color: var(--eduerp-purple); }
+code { color: #C2670E; }
+:root[data-bs-theme='dark'] code { color: #FFB86B; }
+
+/* ---------- Form controls ---------- */
+.form-label { font-size: 0.82rem; font-weight: 600; color: var(--eduerp-ink); }
+.form-control, .form-select, textarea.form-control {
+  background-color: var(--eduerp-surface-alt);
+  border-color: var(--eduerp-border-strong);
+  color: var(--eduerp-ink);
+  border-radius: 8px;
+}
+.form-control:focus, .form-select:focus {
+  background-color: var(--eduerp-surface-alt);
+  border-color: var(--eduerp-purple);
+  color: var(--eduerp-ink);
+  box-shadow: 0 0 0 0.2rem var(--eduerp-purple-light);
+}
+.form-control::placeholder { color: var(--eduerp-muted); opacity: 1; }
+.input-group-text { background-color: var(--eduerp-surface-alt); border-color: var(--eduerp-border-strong); }
+
+/* ---------- Tables ---------- */
+.table { color: var(--eduerp-ink); --bs-table-bg: transparent; }
+.table > :not(caption) > * > * { border-bottom-color: var(--eduerp-border); }
+.table thead th { color: var(--eduerp-muted); font-size: 0.74rem; text-transform: uppercase; letter-spacing: 0.03em; font-weight: 600; border-bottom-color: var(--eduerp-border); }
+.table-hover > tbody > tr:hover > * { background-color: var(--eduerp-surface-alt); color: var(--eduerp-ink); }
+.list-group-item { background-color: transparent; border-color: var(--eduerp-border); color: var(--eduerp-ink); }
+
+/* ---------- Alerts ---------- */
+.alert { border-radius: 9px; font-size: 0.87rem; }
+.alert-danger  { background: var(--pill-danger-bg);  color: var(--pill-danger-fg);  border-color: transparent; }
+.alert-success { background: var(--pill-success-bg); color: var(--pill-success-fg); border-color: transparent; }
+.alert-warning { background: var(--pill-warning-bg); color: var(--pill-warning-fg); border-color: transparent; }
+.alert-info    { background: var(--pill-info-bg);    color: var(--pill-info-fg);    border-color: transparent; }
+
+/* ---------- Simple bar chart ---------- */
+.eduerp-bar-chart {
+  display: flex;
+  align-items: flex-end;
+  gap: 14px;
+  height: 180px;
+  padding-top: 10px;
+}
+.eduerp-bar-col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  height: 100%;
+  gap: 8px;
+}
+.eduerp-bar {
+  width: 100%;
+  max-width: 34px;
+  border-radius: 5px 5px 2px 2px;
+  background: var(--eduerp-purple);
+  transition: height 0.3s ease, background-color 0.2s ease;
+}
+.eduerp-bar-label {
+  font-size: 0.71rem;
+  color: var(--eduerp-muted);
+  font-weight: 600;
+  text-align: center;
+}
+
+/* ---------- Login page ---------- */
+.eduerp-login-wrap {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background:
+    radial-gradient(900px circle at 15% 10%, var(--eduerp-purple-light), transparent 55%),
+    radial-gradient(700px circle at 85% 90%, var(--stat-blue-bg), transparent 55%),
+    var(--eduerp-bg);
+  padding: 24px;
+  transition: background-color 0.2s ease;
+}
+
+.eduerp-login-card {
+  background: var(--eduerp-surface);
+  border: 1px solid var(--eduerp-border);
+  border-radius: 16px;
+  box-shadow: var(--eduerp-shadow-hover);
+  width: 100%;
+  max-width: 400px;
+  padding: 40px 36px;
+  color: var(--eduerp-ink);
+}
+
+.eduerp-login-logo {
+  width: 44px;
+  height: 44px;
+  border-radius: 11px;
+  background: var(--eduerp-purple);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 1.2rem;
+  margin-bottom: 18px;
+}
+
+.eduerp-theme-switch {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+}
+
+@media (max-width: 640px) {
+  .eduerp-navbar-top { padding: 10px 16px; gap: 10px; }
+  .eduerp-navbar-tabs { padding: 0 16px; }
+  .eduerp-content-wrap { padding: 16px; }
+  .eduerp-search { display: none; }
+  .eduerp-page-header { flex-direction: column; align-items: flex-start; }
+}
